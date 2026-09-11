@@ -15,7 +15,7 @@ import javax.imageio.ImageIO;
 
 import offensiveUtils.Require;
 import tools.Fs;
-import utils.Range;
+import utils.Streams;
 
 public final class Ico{
   private Ico(){}
@@ -39,8 +39,7 @@ public final class Ico{
     u16(out,0);
     u16(out,1);
     u16(out,frames.size());
-    var offset= headerSize;
-    for (int i : Range.of(frames)){ offset= entry(out,frames.get(i),pngs.get(i).length,offset); }
+    Streams.zip(frames,pngs).fold((offset,frame,png)->entry(out,frame,png.length,offset), headerSize);
     pngs.forEach(png->out.writeBytes(png));
     return out.toByteArray();
   }
