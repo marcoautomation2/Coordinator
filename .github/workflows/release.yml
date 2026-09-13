@@ -34,8 +34,22 @@ jobs:
         with: { repository: FearlessLang/StandardLibrary, path: src/StandardLibrary }
       - uses: actions/checkout@v4
         with: { repository: FearlessLang/Controllers, path: src/Controllers }
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '26' }
+      - name: Install JDK 26 (linux)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/jdk.tar.gz" https://download.oracle.com/java/26/archive/jdk-26.0.2_linux-x64_bin.tar.gz
+          mkdir -p "$RUNNER_TEMP/jdk"
+          tar -xzf "$RUNNER_TEMP/jdk.tar.gz" -C "$RUNNER_TEMP/jdk" --strip-components=1
+          echo "$RUNNER_TEMP/jdk/bin" >> "$GITHUB_PATH"
+      - name: Install JDK 26 (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://download.oracle.com/java/26/archive/jdk-26.0.2_windows-x64_bin.zip" -OutFile "$env:RUNNER_TEMP\jdk.zip"
+          Expand-Archive -Path "$env:RUNNER_TEMP\jdk.zip" -DestinationPath "$env:RUNNER_TEMP\jdk"
+          $jdkDir = Get-ChildItem "$env:RUNNER_TEMP\jdk" | Select-Object -First 1
+          echo "$($jdkDir.FullName)\bin" >> $env:GITHUB_PATH
       - name: Generate LocalResources.java
         shell: bash
         run: |
